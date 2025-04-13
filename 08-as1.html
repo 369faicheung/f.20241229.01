@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>程式教學清單</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"/>
+    <style>
+        /* 基本樣式 */
+        .item-content {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .item-title {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 0.25rem 0;
+        }
+        .item-subtitle {
+            color: var(--ion-color-medium);
+            font-size: 0.9em;
+        }
+        .item-details {
+            margin: 0.5rem 0;
+            font-size: 0.95em;
+        }
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .course-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+        .course-video, .course-video-iframe {
+            width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+        .course-video-iframe {
+            border: none;
+            height: 200px;
+        }
+
+        /* 針對電腦版的優化 */
+        @media (min-width: 768px) {
+            ion-content {
+                display: flex;
+                justify-content: center;
+            }
+            #courseList {
+                max-width: 800px; /* 限制內容最大寬度 */
+                width: 100%;
+                margin: 0 auto;
+            }
+            .item-content {
+                padding: 16px;
+            }
+            .course-image, .course-video, .course-video-iframe {
+                max-height: 300px; /* 桌面版圖片/影片稍大 */
+            }
+            .course-video-iframe {
+                height: 300px;
+            }
+            .item-title {
+                font-size: 1.4em; /* 標題稍大 */
+            }
+            .item-details {
+                font-size: 1em;
+            }
+        }
+
+        /* 確保 ion-item 不會過寬 */
+        ion-item {
+            --inner-padding-end: 0;
+            --inner-padding-start: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <ion-app>
+        <ion-header>
+            <ion-toolbar>
+                <ion-title>程式教學清單</ion-title>
+            </ion-toolbar>
+            <ion-searchbar placeholder="搜尋課程或描述..." debounce="300"></ion-searchbar>
+            <ion-item>
+                <ion-select label="分類" interface="popover" id="categorySelect">
+                    <ion-select-option value="">全部</ion-select-option>
+                    <ion-select-option value="程式入門">程式入門</ion-select-option>
+                    <ion-select-option value="進階開發">進階開發</ion-select-option>
+                    <ion-select-option value="資料科學">資料科學</ion-select-option>
+                </ion-select>
+            </ion-item>
+        </ion-header>
+
+        <ion-content>
+            <ion-list id="courseList"></ion-list>
+        </ion-content>
+    </ion-app>
+
+    <script>
+        // 資料結構
+        let items = [
+            {
+                title: 'Python 基礎入門',
+                language: 'Python 3',
+                level: '入門',
+                details: '從零開始學習 Python 程式設計，包含變數、流程控制、函式等基礎概念。',
+                category: '程式入門',
+                tags: ['Python', '程式設計', '入門課程'],
+                imageUrl: '/photo/Python_基礎入門.jpg',
+                videoUrl: 'https://www.youtube.com/embed/eUNHOcw-2MA' // Updated URL
+            },
+            {
+                title: 'JavaScript 進階技巧',
+                language: 'JavaScript',
+                level: '進階',
+                details: '深入探討 JavaScript 閉包、異步編程和現代框架應用。',
+                category: '進階開發',
+                tags: ['JavaScript', '前端', '進階'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=JS+Advanced',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: '資料科學與機器學習',
+                language: 'Python',
+                level: '中級',
+                details: '使用 Python 進行資料分析和機器學習模型建構。',
+                category: '資料科學',
+                tags: ['資料科學', '機器學習', 'Python'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Data+Science',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'C++ 程式設計入門',
+                language: 'C++',
+                level: '入門',
+                details: '學習 C++ 的基本語法、物件導向程式設計和記憶體管理。',
+                category: '程式入門',
+                tags: ['C++', '程式設計', '入門'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=C++Basics',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'React 前端開發',
+                language: 'JavaScript',
+                level: '中級',
+                details: '使用 React 構建現代化前端應用，包含組件設計與狀態管理。',
+                category: '進階開發',
+                tags: ['React', 'JavaScript', '前端開發'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=React+Course',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'R 語言資料分析',
+                language: 'R',
+                level: '中級',
+                details: '使用 R 進行統計分析和資料視覺化，適合資料科學初學者。',
+                category: '資料科學',
+                tags: ['R', '資料分析', '統計'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=R+Data+Analysis',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'Java 企業級應用',
+                language: 'Java',
+                level: '進階',
+                details: '學習使用 Java 開發企業級應用，包含 Spring 框架和微服務架構。',
+                category: '進階開發',
+                tags: ['Java', '後端', '企業應用'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Java+Enterprise',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'HTML 與 CSS 網頁設計',
+                language: 'HTML/CSS',
+                level: '入門',
+                details: '學習 HTML 和 CSS 打造響應式網頁，適合初學者。',
+                category: '程式入門',
+                tags: ['HTML', 'CSS', '網頁設計'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=HTML+CSS',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'Node.js 後端開發',
+                language: 'JavaScript',
+                level: '中級',
+                details: '使用 Node.js 構建高效的後端服務，學習 RESTful API 設計。',
+                category: '進階開發',
+                tags: ['Node.js', '後端', 'JavaScript'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Node.js',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'SQL 資料庫基礎',
+                language: 'SQL',
+                level: '入門',
+                details: '學習 SQL 語法，掌握資料庫查詢與管理的基本技巧。',
+                category: '程式入門',
+                tags: ['SQL', '資料庫', '入門'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=SQL+Basics',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: '深度學習入門',
+                language: 'Python',
+                level: '進階',
+                details: '使用 TensorFlow 和 PyTorch 構建神經網絡，探索深度學習應用。',
+                category: '資料科學',
+                tags: ['深度學習', 'Python', 'AI'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Deep+Learning',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'Go 語言基礎',
+                language: 'Go',
+                level: '入門',
+                details: '學習 Go 語言的基本語法，適合快速開發高效應用。',
+                category: '程式入門',
+                tags: ['Go', '程式設計', '入門'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Go+Basics',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'Vue.js 框架應用',
+                language: 'JavaScript',
+                level: '中級',
+                details: '使用 Vue.js 構建動態前端應用，學習組件化開發。',
+                category: '進階開發',
+                tags: ['Vue.js', 'JavaScript', '前端'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Vue.js',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: '大數據分析基礎',
+                language: 'Python',
+                level: '中級',
+                details: '使用 Pandas 和 Spark 處理大規模資料集，學習資料清理與分析。',
+                category: '資料科學',
+                tags: ['大數據', 'Python', '資料分析'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Big+Data',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'C# 桌面應用開發',
+                language: 'C#',
+                level: '中級',
+                details: '使用 C# 和 .NET 開發桌面應用，學習 GUI 設計。',
+                category: '進階開發',
+                tags: ['C#', '.NET', '桌面應用'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=C#+Desktop',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'Ruby on Rails 網頁開發',
+                language: 'Ruby',
+                level: '中級',
+                details: '使用 Ruby on Rails 快速構建網頁應用，學習 MVC 架構。',
+                category: '進階開發',
+                tags: ['Ruby', 'Rails', '網頁開發'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Ruby+Rails',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: '資料視覺化基礎',
+                language: 'Python',
+                level: '入門',
+                details: '使用 Matplotlib 和 Seaborn 創建專業的資料視覺化圖表。',
+                category: '資料科學',
+                tags: ['資料視覺化', 'Python', '入門'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Data+Visualization',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'PHP 動態網頁開發',
+                language: 'PHP',
+                level: '中級',
+                details: '學習 PHP 開發動態網頁，包含表單處理與資料庫整合。',
+                category: '進階開發',
+                tags: ['PHP', '網頁開發', '後端'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=PHP+Web',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'Swift iOS 應用開發',
+                language: 'Swift',
+                level: '中級',
+                details: '使用 Swift 開發 iOS 應用，學習 UIKit 和 SwiftUI。',
+                category: '進階開發',
+                tags: ['Swift', 'iOS', '行動應用'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Swift+iOS',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            },
+            {
+                title: 'Linux Shell 腳本入門',
+                language: 'Shell',
+                level: '入門',
+                details: '學習 Linux Shell 腳本，掌握系統自動化與檔案管理。',
+                category: '程式入門',
+                tags: ['Shell', 'Linux', '腳本'],
+                imageUrl: 'https://via.placeholder.com/300x200?text=Shell+Scripting',
+                videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+            }
+        ];
+
+        let filteredItems = [...items];
+
+        // 更新清單顯示
+        function updateList() {
+            const list = document.querySelector('#courseList');
+            list.innerHTML = '';
+
+            filteredItems.forEach(item => {
+                const itemElement = document.createElement('ion-item');
+                // Check if videoUrl is a YouTube URL
+                const isYouTube = item.videoUrl.includes('youtube.com') || item.videoUrl.includes('youtu.be');
+                let videoHtml = '';
+                if (isYouTube) {
+                    // Extract video ID from URL
+                    const videoIdMatch = item.videoUrl.match(/(?:v=|youtu\.be\/)([^&?]+)/);
+                    const videoId = videoIdMatch ? videoIdMatch[1] : '';
+                    videoHtml = `<iframe class="course-video-iframe" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+                } else {
+                    videoHtml = `
+                        <video class="course-video" controls>
+                            <source src="${item.videoUrl}" type="video/mp4">
+                        </video>
+                    `;
+                }
+                itemElement.innerHTML = `
+                    <div class="item-content">
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-subtitle">語言: ${item.language} | 程度: ${item.level}</div>
+                        <div class="item-details">${item.details}</div>
+                        <img class="course-image" src="${item.imageUrl}" alt="${item.title}"/>
+                        ${videoHtml}
+                        <div class="tag-container">
+                            ${item.tags.map(tag => `<ion-chip size="small" onclick="filterByTag('${tag}')">${tag}</ion-chip>`).join('')}
+                        </div>
+                    </div>
+                `;
+                list.appendChild(itemElement);
+            });
+        }
+
+        // 搜尋功能
+        const searchbar = document.querySelector('ion-searchbar');
+        searchbar.addEventListener('ionInput', event => {
+            const searchTerm = event.target.value.toLowerCase();
+            filteredItems = items.filter(item =>
+                item.title.toLowerCase().includes(searchTerm) ||
+                item.details.toLowerCase().includes(searchTerm)
+            );
+            updateList();
+        });
+
+        // 分類過濾
+        const categorySelect = document.querySelector('#categorySelect');
+        categorySelect.addEventListener('ionChange', event => {
+            const category = event.detail.value;
+            filteredItems = category
+                ? items.filter(item => item.category === category)
+                : [...items];
+            updateList();
+        });
+
+        // 標籤快速過濾
+        window.filterByTag = function(tag) {
+            filteredItems = items.filter(item => item.tags.includes(tag));
+            updateList();
+            // 更新選擇的分類
+            categorySelect.value = '';
+        };
+
+        // 初始化顯示
+        updateList();
+    </script>
+</body>
+</html>
